@@ -4,7 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Muhammad Mukiev | Fullstack Developer</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2e 0%, #282c34 100%);
+            font-family: 'Courier New', monospace;
+            color: #58a6ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .terminal {
+            width: 100%;
+            max-width: 900px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .terminal-header {
+            background: #161b22;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .terminal-title {
+            color: #7ee787;
+            font-size: 13px;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .btn:nth-child(1) { background: #ff6058; }
+        .btn:nth-child(2) { background: #ffbd2e; }
+        .btn:nth-child(3) { background: #28c840; }
+
+        .terminal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        #terminal-output {
+            width: 100%;
+        }
+
+        .output-line {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .prompt { color: #7ee787; margin-right: 8px; }
+        .command { color: #79c0ff; }
+        .output { color: #c9d1d9; }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #30363d;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #58a6ff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            flex: 1;
+        }
+
+        .terminal-input::placeholder { color: #30363d; }
+
+        .terminal-body::-webkit-scrollbar { width: 8px; }
+        .terminal-body::-webkit-scrollbar-track { background: #0d1117; }
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+        .terminal-body::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+        @media (max-width: 768px) {
+            .terminal { height: 500px; }
+            .terminal-input { font-size: 12px; }
+        }
+    </style>
 </head>
 <body>
     <div class="terminal">
@@ -31,6 +147,138 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const terminal = document.getElementById('terminal-output');
+        const input = document.getElementById('terminal-input');
+
+        const initialSequence = [
+            { cmd: 'whoami', delay: 500 },
+            { cmd: 'cat about.txt', delay: 2500 },
+            { cmd: 'cat skills.txt', delay: 3500 },
+            { cmd: 'cat projects.txt', delay: 4500 }
+        ];
+
+        const commands = {
+            help: { description: 'Show available commands', action: () => showHelp() },
+            whoami: { description: 'Who am I', action: () => printOutput('Muhammad Mukiev | Fullstack Developer') },
+            'cat about.txt': { description: 'About me', action: () => printOutput('Muhammad Mukiev | Fullstack Developer\n2+ years of commercial development\nSpecialized in web') },
+            'cat skills.txt': { description: 'Show tech stack', action: () => showSkills() },
+            'cat projects.txt': { description: 'View my projects', action: () => showProjects() },
+            contact: { description: 'Get in touch', action: () => showContact() },
+            clear: { description: 'Clear terminal', action: () => clearTerminal() }
+        };
+
+        async function typeCommand(text, element) {
+            return new Promise((resolve) => {
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, 50);
+                    } else {
+                        resolve();
+                    }
+                }
+                type();
+            });
+        }
+
+        function printOutput(text, isCommand = false) {
+            const line = document.createElement('div');
+            line.className = 'output-line';
+            if (isCommand) {
+                line.innerHTML = `<span class="prompt">$</span><span class="command">${text}</span>`;
+            } else {
+                line.innerHTML = `<span class="output">${text.split('\n').join('<br>')}</span>`;
+            }
+            terminal.appendChild(line);
+            document.querySelector('.terminal-body').scrollTop = document.querySelector('.terminal-body').scrollHeight;
+        }
+
+        function showHelp() {
+            let help = 'Available commands:\n';
+            for (let cmd in commands) {
+                help += `  ${cmd.padEnd(20)} - ${commands[cmd].description}\n`;
+            }
+            printOutput(help);
+        }
+
+        function showSkills() {
+            printOutput(`Frontend:   Vue.js 3 | JavaScript | HTML | CSS
+Backend:    Python | FastAPI | Django
+Databases:  PostgreSQL | MongoDB | Redis | Elasticsearch
+DevOps:     Docker | Nginx | Git | Linux`);
+        }
+
+        function showProjects() {
+            printOutput(`> Marketplace Platform
+  - Full-stack SPA with 10k+ products
+  - Vue.js + FastAPI + ElasticSearch
+  
+> CRM System
+  - Avito API integration
+  - Real-time synchronization
+  
+> VSCode Extension
+  - CSS optimization tool`);
+        }
+
+        function showContact() {
+            printOutput(`Email:    madani200160@gmail.com
+GitHub:   github.com/MukievMukhammad`);
+        }
+
+        function clearTerminal() {
+            terminal.innerHTML = '';
+        }
+
+        async function runInitialSequence() {
+            for (let i = 0; i < initialSequence.length; i++) {
+                const { cmd, delay } = initialSequence[i];
+                await new Promise(resolve => setTimeout(resolve, delay));
+
+                const line = document.createElement('div');
+                line.className = 'output-line';
+                line.innerHTML = '<span class="prompt">$</span><span class="command"></span>';
+                terminal.appendChild(line);
+
+                const commandSpan = line.querySelector('.command');
+                await typeCommand(cmd, commandSpan);
+
+                if (commands[cmd]) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    commands[cmd].action();
+                }
+            }
+        }
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = input.value.trim().toLowerCase();
+                if (command) {
+                    printOutput(command, true);
+                    input.value = '';
+                    if (commands[command]) {
+                        commands[command].action();
+                    } else {
+                        printOutput(`Command not found: ${command}. Type 'help' for available commands.`);
+                    }
+                }
+            }
+        });
+
+        window.addEventListener('load', () => {
+            printOutput(`Welcome to Muhammad Mukiev's Terminal Portfolio
+Type 'help' to get started
+`);
+            runInitialSequence();
+            input.focus();
+        });
+
+        document.querySelector('.terminal').addEventListener('click', () => {
+            input.focus();
+        });
+    </script>
 </body>
 </html>
